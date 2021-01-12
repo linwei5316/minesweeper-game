@@ -1,21 +1,62 @@
-import React from 'react';
+import React, {useState, FunctionComponent} from 'react';
+import styled from 'styled-components';
 
-interface Props {
+import Square from '@/components/Square';
 
+const ButtonSquare = styled(Square)`
+  width: auto;
+  height: auto;
+  padding: 5px;
+  display: inline-block;
+`
+
+type Enum = {
+  [key: string]: number | string;
 }
+type WithGameContainer = <L extends Enum>(Game: FunctionComponent<{level: number}>, levelEnum: L) => FunctionComponent;
+const withGameContainer: WithGameContainer = (Game, levelEnum) => {
+  interface Props {
+    Game: FunctionComponent<{level: number}>;
+  }
 
-const GameContainer = (props: Props) => {
-  // TODO: useGame hook
+  const GameContainer = (props: Props) => {
+    const {Game} = props;
+    const [ level, setLevel ] = useState<number | null>(null);
 
-  return (
-    <div>
+    const RenderLevelOption = () => {
+      return Object.values(levelEnum).filter((item) => {
+        return typeof item === 'number';
+      }).map((levelValue) => {
+        return <ButtonSquare onClick={() => {
+          setLevel(levelValue as number)
+        }}>{levelEnum[levelValue]}</ButtonSquare>
+      })
 
-    </div>
-  )
-}
+    }
 
-const withGameContainer = () => {
+    return (
+      <div>
+        {
+          level === null ? (
+            <>
+              <p>Select Level To Play !</p>
 
+              {RenderLevelOption()}
+            </>
+          ) : (
+
+            <Game level={level as number} />
+          )
+        }
+      </div>
+    )
+  }
+
+  return () => {
+    return (
+      <GameContainer Game={Game} />
+    )
+  }
 }
 
 export default withGameContainer;

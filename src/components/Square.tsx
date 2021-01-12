@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import {clickable} from '@/style/utilities';
 
 const borderCSSValue = (color: string) => {
   return `3px solid ${color}`;
@@ -14,6 +15,7 @@ export default styled.div`
       background-color: ${theme.palette.grayNormal};
     `
   } }
+  ${clickable}
   width: 25px;
   height: 25px;
 `
