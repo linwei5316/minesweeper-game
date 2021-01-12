@@ -4,7 +4,7 @@ const theme: DefaultTheme = {
   palette: {
     white: '#fff',
     black: '#000',
-    grayLight: '#c6c6c6',
+    grayLight: '#d9d9d9',
     grayNormal: '#c4c4c4',
     grayDark: '#808080',
     minesweeperContentNormal: '#1c00ff',

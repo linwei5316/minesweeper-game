@@ -9,6 +9,12 @@ const GlobalStyle = createGlobalStyle`
     height: 100vh;
   }
   
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
   div {
     box-sizing: border-box;
   }
