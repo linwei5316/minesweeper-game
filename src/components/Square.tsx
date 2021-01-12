@@ -18,5 +18,8 @@ export default styled.div`
   ${clickable}
   width: 25px;
   height: 25px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
 `
 

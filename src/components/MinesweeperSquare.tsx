@@ -1,17 +1,32 @@
 import React from 'react';
+import styled from "styled-components";
 import Square from '@/components/Square';
+import {MinesweeperMapData} from '@/consts/types';
+
+const StyledSquare = styled(Square)`
+  font-size: 14px;
+`
 
 interface Props {
-  type: any;
+  type: MinesweeperMapData;
+  onClick: () => void;
+  onContextMenu: () => void;
 }
 const MinesweeperSquare = (props: Props) => {
   //TODO state machine
-  const {type} = props;
+  const {type, onClick, onContextMenu} = props;
+
+  const clickContextMenuHandler = (event: any) => {
+    if (event.type === 'contextmenu') {
+      event.preventDefault();
+      onContextMenu();
+    }
+  }
 
   return (
-    <Square>
+    <StyledSquare onClick={() => onClick()} onContextMenu={clickContextMenuHandler}>
       {type}
-    </Square>
+    </StyledSquare>
   )
 }
 

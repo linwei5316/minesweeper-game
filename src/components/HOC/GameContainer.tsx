@@ -24,13 +24,19 @@ const withGameContainer: WithGameContainer = (Game, levelEnum) => {
     const [ level, setLevel ] = useState<number | null>(null);
 
     const RenderLevelOption = () => {
-      return Object.values(levelEnum).filter((item) => {
-        return typeof item === 'number';
-      }).map((levelValue) => {
-        return <ButtonSquare onClick={() => {
-          setLevel(levelValue as number)
-        }}>{levelEnum[levelValue]}</ButtonSquare>
-      })
+      return Object.values(levelEnum)
+        .filter((item) => {
+          return typeof item === 'number';
+        })
+        .map((levelValue) => {
+          return (
+            <ButtonSquare
+              key={levelValue}
+              onClick={() => {
+              setLevel(levelValue as number)
+            }}>{levelEnum[levelValue]}</ButtonSquare>
+          )
+        });
 
     }
 

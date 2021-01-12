@@ -7,6 +7,17 @@ import MinesweeperSquare from '@/components/MinesweeperSquare';
 
 import Square from '@/components/Square';
 
+const squareUnitWidth = 25;
+
+const SquareContainer = styled.div<{xAmount: number}>`
+  margin-top: 10px;
+  width: ${({xAmount}) => xAmount * squareUnitWidth}px;
+  font-size: 0;
+  display: flex;
+  flex-wrap: wrap;
+`
+
+
 
 type MapIndex = number;
 
@@ -38,11 +49,14 @@ const GameMinesweeper = (props: Props) => {
     },
   }
 
+  const levelData = levelMapping[level];
+
+  //TODO 可以把 getLevelData 刪除 改用 levelData？？？？
   const getLevelData = (): GameLevelContent => {
     return levelMapping[level];
   }
 
-  const getInitialMap = () => {
+  const getInitialMap = (): MinesweeperMapData[] => {
     const [xAmount, yAmount] = getLevelData().map;
 
     const result = [];
@@ -58,25 +72,59 @@ const GameMinesweeper = (props: Props) => {
   const [minePosition, setMinePosition] = useState<MapIndex[]>([]);
   const [mapData, setMapData] = useState<MinesweeperMapData[]>(() => getInitialMap());
 
+  const clickSquareHandler = (position: number) => {
+    console.log(666)
+    if (isGameInitial()) {
+      //TODO initialMinePosition
+
+    }
+
+    if (minePosition.includes(position)) {
+
+      // TODO: BOOOOOOOOM!!!
+    }
+  }
+
+
+  const flagAmount = levelData.mineAmount - mapData.filter((mapData) => mapData === MapUnitType.Flag).length;
+  //TODO  useFlag => switchFlag  clearFlag flagAmount
+  const switchFlagHandler = (position: number) => {
+    if (flagAmount > 0) {
+      console.log('插旗囉')
+      const cloneData = [...mapData];
+
+      switch (cloneData[position]) {
+        case null:
+          cloneData[position] = MapUnitType.Flag;
+          break;
+        case MapUnitType.Flag:
+          cloneData[position] = null;
+          break;
+      }
+
+      setMapData(cloneData);
+    }
+  }
+
+
   const RenderMinesweeperSquare = () => {
-    return mapData.map((item) => {
+    return mapData.map((item, index) => {
       return <MinesweeperSquare
+        key={index}
         type={item}
+        onClick={() => clickSquareHandler(index)}
+        onContextMenu={() => switchFlagHandler(index)}
       />
     })
   }
 
 
-
-  //TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!  地雷使用位置即可 number[]！！！！！！！！
   //TODO setFlag  記得使用 funciton 確保 async
-  const [flag, setFlag] = useState(() => getLevelData().mineAmount);
+  // const [flag, setFlag] = useState(() => getLevelData().mineAmount);
 
 
 
   const isGameInitial = () => {
-    //TODO 如果地圖全部都是覆蓋或是旗幟，就算未開局
-    // return mapData.some(() => {})
     let result = true;
 
     for (let index = 0; index < mapData.length; index++) {
@@ -128,12 +176,15 @@ const GameMinesweeper = (props: Props) => {
     <div>
       {/* TODO panel*/}
       <div>
-        <span>標誌: {flag}</span>
+        <span>標誌: {flagAmount}</span>
 
         <Square onClick={initialGame}>R</Square>
       </div>
 
-      {RenderMinesweeperSquare()}
+      <SquareContainer xAmount={levelData.map[0]}>
+        {RenderMinesweeperSquare()}
+      </SquareContainer>
+
 
 
       {isGameInitial() && '還沒開局'}
