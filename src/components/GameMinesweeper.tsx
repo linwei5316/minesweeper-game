@@ -20,6 +20,124 @@ const SquareContainer = styled.div<{xAmount: number}>`
 
 
 type MapIndex = number;
+type MovedIndex = MapIndex | null;
+
+class Position {
+  constructor(private _position: MapIndex, private _map: [number, number]) {}
+
+  public get position(): MapIndex {
+    return this._position;
+  }
+
+  public get twoDimensionalPosition(): [number, number] {
+    const [xAmount] = this._map;
+
+    return [
+      this._position % xAmount,
+      Math.floor(this._position / xAmount)
+    ] as [number, number];
+  }
+
+  private get LimitIndex() {
+    const [xAmount, yAmount] = this._map;
+
+    return {
+      Top: 0,
+      Left: 0,
+      Right: xAmount,
+      Bottom: yAmount,
+    } as const;
+  }
+
+  public static createTool(map: [number, number]) {
+    const [xAmount, yAmount] = map;
+    const LimitIndex = {
+      Top: 0,
+      Left: 0,
+      Right: xAmount - 1,
+      Bottom: yAmount - 1,
+    } as const;
+
+    const yCorrectionHandler = (x: number, y: number) => {
+      return y * xAmount + x;
+    }
+
+    return {
+      getTwoDimensionalPosition(position: MapIndex): [number, number] {
+        const [xAmount] = map;
+
+        return [
+          position % xAmount,
+          Math.floor(position / xAmount)
+        ] as [number, number];
+      },
+      getAdjacentPosition(position: MapIndex): MovedIndex[] {
+        return [
+          this.leftTopOf(position),    this.topOf(position),       this.rightTopOf(position),
+          this.leftOf(position),                                      this.rightOf(position),
+          this.leftBottomOf(position), this.bottomOf(position), this.rightBottomOf(position),
+        ];
+      },
+      topOf(position: MapIndex): MovedIndex {
+        const [x, y] = this.getTwoDimensionalPosition(position);
+
+        return y === LimitIndex.Top ? null : yCorrectionHandler(x, y - 1);
+      },
+      rightOf(position: MapIndex): MovedIndex {
+        const [x] = this.getTwoDimensionalPosition(position);
+
+        return x === LimitIndex.Right ? null : x + 1;
+      },
+      bottomOf(position: MapIndex): MovedIndex {
+        const [x, y] = this.getTwoDimensionalPosition(position);
+
+        return y === LimitIndex.Bottom ? null : yCorrectionHandler(x, y + 1);
+      },
+      leftOf(position: MapIndex): MovedIndex {
+        const [x] = this.getTwoDimensionalPosition(position);
+
+        return x === LimitIndex.Left ? null : x - 1;
+      },
+      leftTopOf(position: MapIndex): MovedIndex {
+        const [x, y] = this.getTwoDimensionalPosition(position);
+
+        return x === LimitIndex.Left
+          ? null
+          : y === LimitIndex.Top
+            ? null
+            : yCorrectionHandler(x - 1, y - 1);
+      },
+      leftBottomOf(position: MapIndex): MovedIndex {
+        const [x, y] = this.getTwoDimensionalPosition(position);
+
+        return x === LimitIndex.Left
+          ? null
+          : y === LimitIndex.Bottom
+            ? null
+            : yCorrectionHandler(x - 1, y + 1);
+      },
+      rightTopOf(position: MapIndex): MovedIndex {
+        const [x, y] = this.getTwoDimensionalPosition(position);
+
+        return x === LimitIndex.Right
+          ? null
+          : y === LimitIndex.Top
+            ? null
+            : yCorrectionHandler(x + 1, y - 1);
+      },
+      rightBottomOf(position: MapIndex): MovedIndex {
+        const [x, y] = this.getTwoDimensionalPosition(position);
+
+        return x === LimitIndex.Right
+          ? null
+          : y === LimitIndex.Bottom
+            ? null
+            : yCorrectionHandler(x + 1, y + 1);
+      },
+    }
+  }
+}
+
 
 interface Props {
   level: MinesweeperLevel;
@@ -52,12 +170,12 @@ const GameMinesweeper = (props: Props) => {
   const levelData = levelMapping[level];
 
   //TODO 可以把 getLevelData 刪除 改用 levelData？？？？
-  const getLevelData = (): GameLevelContent => {
-    return levelMapping[level];
-  }
+  // const getLevelData = (): GameLevelContent => {
+  //   return levelMapping[level];
+  // }
 
   const getInitialMap = (): MinesweeperMapData[] => {
-    const [xAmount, yAmount] = getLevelData().map;
+    const [xAmount, yAmount] = levelData.map;
 
     const result = [];
     for (let index = 0; index < xAmount * yAmount; index++) {
@@ -72,17 +190,37 @@ const GameMinesweeper = (props: Props) => {
   const [minePosition, setMinePosition] = useState<MapIndex[]>([]);
   const [mapData, setMapData] = useState<MinesweeperMapData[]>(() => getInitialMap());
 
-  const clickSquareHandler = (position: number) => {
-    console.log(666)
+  const getTwoDimensionalPosition = (position: MapIndex): [number, number] => {
+    const [xAmount] = levelData.map;
+
+    return [position % xAmount, Math.floor(position / xAmount)];
+  }
+  const checkAround = (position: MapIndex) => {
+    //TODO 在這邊時做遞迴
+  //  第一步 先檢查周邊，如果已有地雷，則指標註
+  //
+  }
+
+  const clickSquareHandler = (position: MapIndex) => {
+    console.log('clickSquareHandler position', position)
     if (isGameInitial()) {
       //TODO initialMinePosition
+      console.log(getInitialMinePosition(position))
+      // setMinePosition()
+
+      console.log('阿斯', Position.createTool(levelData.map).getAdjacentPosition(position))
+
+
+      //TODO 開地圖地迴 ！！！！！！
+    } else {
+
+      if (minePosition.includes(position)) {
+
+        // TODO: BOOOOOOOOM!!!
+      }
 
     }
 
-    if (minePosition.includes(position)) {
-
-      // TODO: BOOOOOOOOM!!!
-    }
   }
 
 
@@ -118,19 +256,13 @@ const GameMinesweeper = (props: Props) => {
     })
   }
 
-
-  //TODO setFlag  記得使用 funciton 確保 async
-  // const [flag, setFlag] = useState(() => getLevelData().mineAmount);
-
-
-
   const isGameInitial = () => {
     let result = true;
 
     for (let index = 0; index < mapData.length; index++) {
       const condition = [MapUnitType.Flag, null];
 
-      if (condition.includes(mapData[index])) {
+      if (!condition.includes(mapData[index])) {
         result = false;
         break;
       }
@@ -141,7 +273,7 @@ const GameMinesweeper = (props: Props) => {
 
 
   const getInitialMinePosition = (firstClickMapIndex: MapIndex): MapIndex[] => {
-    const [xAmount, yAmount] = getLevelData().map;
+    const [xAmount, yAmount] = levelData.map;
     const indexStack = [] as MapIndex[];
     for (let index = 0; index < mapData.length; index++) {
       if (index !== firstClickMapIndex) {
@@ -149,7 +281,7 @@ const GameMinesweeper = (props: Props) => {
       }
     }
 
-    const mineAmount = getLevelData().mineAmount;
+    const mineAmount = levelData.mineAmount;
     return [...new Array(mineAmount)]
       .reduce((accumulator) => {
         const randomIndex = Math.floor(Math.random() * indexStack.length);
