@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from "styled-components";
+import styled, {DefaultTheme} from "styled-components";
 import {MapUnitType} from '@/consts/enum';
 import Square from '@/components/Square';
 import {MinesweeperMapData} from '@/consts/types';
@@ -14,6 +14,12 @@ const StyledSquare = styled(Square)<{ type: MinesweeperMapData }>`
       : `border: 1px solid ${theme.palette.grayLight};`;
   }}
   ${({type}) => type === MapUnitType.Flag ? 'cursor: default;' : ''}
+`
+
+const Text = styled.span<{colorKey: keyof DefaultTheme['palette']}>`
+  color: ${({theme, colorKey}) => theme.palette[colorKey]};
+  font-weight: bolder;
+  font-size: 17px;
 `
 
 interface Props {
@@ -46,14 +52,16 @@ const MinesweeperSquare = (props: Props) => {
       case MapUnitType.Clear:
         return;
       case MapUnitType.NearLevel1:
+        return <Text colorKey="minesweeperContentNormal">{type}</Text>;
       case MapUnitType.NearLevel2:
+        return <Text colorKey="minesweeperContentWarn">{type}</Text>;
       case MapUnitType.NearLevel3:
       case MapUnitType.NearLevel4:
       case MapUnitType.NearLevel5:
       case MapUnitType.NearLevel6:
       case MapUnitType.NearLevel7:
       case MapUnitType.NearLevel8:
-        return type;
+        return <Text colorKey="minesweeperContentDanger">{type}</Text>;
       case MapUnitType.Flag:
         return <Image src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Pin_Emoji_60x60.png?5754029179590811720" />;
       case MapUnitType.Mine:
