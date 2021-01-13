@@ -1,5 +1,12 @@
-import {MapIndex, MovedIndex} from '@/consts/types';
+import {MapIndex, MovedIndex, MinesweeperMapData} from '@/consts/types';
 import {MapUnitType} from '@/consts/enum';
+
+
+export const isSquareCover = (typeValue: MinesweeperMapData) => {
+  const condition = [MapUnitType.Flag, null];
+
+  return condition.includes(typeValue);
+}
 
 const filterValidPosition = (positionList: MovedIndex[]): MapIndex[] => {
   return positionList.filter((position) => position !== null) as MapIndex[];

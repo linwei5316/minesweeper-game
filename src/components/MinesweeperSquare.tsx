@@ -3,14 +3,7 @@ import styled from "styled-components";
 import {MapUnitType} from '@/consts/enum';
 import Square from '@/components/Square';
 import {MinesweeperMapData} from '@/consts/types';
-
-
-const isSquareCover = (typeValue: MinesweeperMapData) => {
-  const condition = [MapUnitType.Flag, null];
-
-  return condition.includes(typeValue);
-}
-
+import {isSquareCover} from '@/functionTool/minesweeper';
 
 const StyledSquare = styled(Square)<{ type: MinesweeperMapData }>`
   font-size: 14px;
@@ -61,8 +54,10 @@ const MinesweeperSquare = (props: Props) => {
       case MapUnitType.NearLevel7:
       case MapUnitType.NearLevel8:
         return type;
+      case MapUnitType.Flag:
+        return "F";
       case MapUnitType.Mine:
-        return '!!';
+        return '!!!';
     }
   }
 
