@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import styled from 'styled-components';
 import {MinesweeperLevel, MapUnitType} from '@/consts/enum';
-import {MinesweeperMapData} from '@/consts/types';
+import {MinesweeperMapData, MapIndex} from '@/consts/types';
 import withGameContainer from '@/components/HOC/GameContainer';
 import MinesweeperSquare from '@/components/MinesweeperSquare';
+import {Position} from '@/functionTool/minesweeper';
 
 import Square from '@/components/Square';
 
@@ -18,125 +19,6 @@ const SquareContainer = styled.div<{xAmount: number}>`
 `
 
 
-
-type MapIndex = number;
-type MovedIndex = MapIndex | null;
-
-class Position {
-  constructor(private _position: MapIndex, private _map: [number, number]) {}
-
-  public get position(): MapIndex {
-    return this._position;
-  }
-
-  public get twoDimensionalPosition(): [number, number] {
-    const [xAmount] = this._map;
-
-    return [
-      this._position % xAmount,
-      Math.floor(this._position / xAmount)
-    ] as [number, number];
-  }
-
-  private get LimitIndex() {
-    const [xAmount, yAmount] = this._map;
-
-    return {
-      Top: 0,
-      Left: 0,
-      Right: xAmount,
-      Bottom: yAmount,
-    } as const;
-  }
-
-  public static createTool(map: [number, number]) {
-    const [xAmount, yAmount] = map;
-    const LimitIndex = {
-      Top: 0,
-      Left: 0,
-      Right: xAmount - 1,
-      Bottom: yAmount - 1,
-    } as const;
-
-    const yCorrectionHandler = (x: number, y: number) => {
-      return y * xAmount + x;
-    }
-
-    return {
-      getTwoDimensionalPosition(position: MapIndex): [number, number] {
-        const [xAmount] = map;
-
-        return [
-          position % xAmount,
-          Math.floor(position / xAmount)
-        ] as [number, number];
-      },
-      getAdjacentPosition(position: MapIndex): MovedIndex[] {
-        return [
-          this.leftTopOf(position),    this.topOf(position),       this.rightTopOf(position),
-          this.leftOf(position),                                      this.rightOf(position),
-          this.leftBottomOf(position), this.bottomOf(position), this.rightBottomOf(position),
-        ];
-      },
-      topOf(position: MapIndex): MovedIndex {
-        const [x, y] = this.getTwoDimensionalPosition(position);
-
-        return y === LimitIndex.Top ? null : yCorrectionHandler(x, y - 1);
-      },
-      rightOf(position: MapIndex): MovedIndex {
-        const [x] = this.getTwoDimensionalPosition(position);
-
-        return x === LimitIndex.Right ? null : x + 1;
-      },
-      bottomOf(position: MapIndex): MovedIndex {
-        const [x, y] = this.getTwoDimensionalPosition(position);
-
-        return y === LimitIndex.Bottom ? null : yCorrectionHandler(x, y + 1);
-      },
-      leftOf(position: MapIndex): MovedIndex {
-        const [x] = this.getTwoDimensionalPosition(position);
-
-        return x === LimitIndex.Left ? null : x - 1;
-      },
-      leftTopOf(position: MapIndex): MovedIndex {
-        const [x, y] = this.getTwoDimensionalPosition(position);
-
-        return x === LimitIndex.Left
-          ? null
-          : y === LimitIndex.Top
-            ? null
-            : yCorrectionHandler(x - 1, y - 1);
-      },
-      leftBottomOf(position: MapIndex): MovedIndex {
-        const [x, y] = this.getTwoDimensionalPosition(position);
-
-        return x === LimitIndex.Left
-          ? null
-          : y === LimitIndex.Bottom
-            ? null
-            : yCorrectionHandler(x - 1, y + 1);
-      },
-      rightTopOf(position: MapIndex): MovedIndex {
-        const [x, y] = this.getTwoDimensionalPosition(position);
-
-        return x === LimitIndex.Right
-          ? null
-          : y === LimitIndex.Top
-            ? null
-            : yCorrectionHandler(x + 1, y - 1);
-      },
-      rightBottomOf(position: MapIndex): MovedIndex {
-        const [x, y] = this.getTwoDimensionalPosition(position);
-
-        return x === LimitIndex.Right
-          ? null
-          : y === LimitIndex.Bottom
-            ? null
-            : yCorrectionHandler(x + 1, y + 1);
-      },
-    }
-  }
-}
 
 
 interface Props {
@@ -205,13 +87,29 @@ const GameMinesweeper = (props: Props) => {
     console.log('clickSquareHandler position', position)
     if (isGameInitial()) {
       //TODO initialMinePosition
-      console.log(getInitialMinePosition(position))
-      // setMinePosition()
+      const _minePosition = getInitialMinePosition(position);
+      console.log('地雷位置', _minePosition)
+      setMinePosition(_minePosition);
 
-      console.log('阿斯', Position.createTool(levelData.map).getAdjacentPosition(position))
+
+      const positionTool = Position.createTool(levelData.map);
+
+      console.log('點後附近座標',
+        positionTool.getAdjacentPosition(position),
+        '附近地雷數',
+        positionTool.getMineAdjacentLevel(position, _minePosition)
+      )
+
+      // 由這邊展開
+      // const firstCheckPositionStack = [position, ...positionTool.getAdjacentPosition(position)];
 
 
-      //TODO 開地圖地迴 ！！！！！！
+      //TODO 開地圖地迴 ！！！！！！ 但這邊還沒確認地雷
+      // firstCheckPositionStack.map((position, index, stack) => {
+      //   return positionTool.getAdjacentPosition(position)
+      //     .filter((position) => !stack.includes(position))
+      // })
+
     } else {
 
       if (minePosition.includes(position)) {
@@ -222,6 +120,10 @@ const GameMinesweeper = (props: Props) => {
     }
 
   }
+
+  // useEffect(() => {
+  //
+  // }, [minePosition])
 
 
   const flagAmount = levelData.mineAmount - mapData.filter((mapData) => mapData === MapUnitType.Flag).length;
