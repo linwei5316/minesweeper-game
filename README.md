@@ -1,5 +1,8 @@
 # A Windows Classic game Minesweeper!
 
+## DEMO URL
+[https://linwei5316.github.io/minesweeper-game/](https://linwei5316.github.io/minesweeper-game/)
+
 ## Available Scripts
 
 In the project directory, you can run:
