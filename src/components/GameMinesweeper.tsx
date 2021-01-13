@@ -1,14 +1,21 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import styled from 'styled-components';
+import {generateSquareBorderCSS} from '@/style/utilities';
 import {MinesweeperLevel, MapUnitType} from '@/consts/enum';
 import {MinesweeperMapData, MapIndex, GameResult} from '@/consts/types';
 import withGameContainer from '@/components/HOC/GameContainer';
+import MinesweeperPanel from '@/components/MinesweeperPanel';
 import MinesweeperSquare from '@/components/MinesweeperSquare';
 import {Position, isSquareCover} from '@/functionTool/minesweeper';
 
-import Square from '@/components/Square';
 
 const squareUnitWidth = 25;
+
+const GameContainer = styled.div`
+  ${({theme}) => generateSquareBorderCSS('high', theme, 5)}
+  padding: 20px;
+  background-color: ${({theme}) => theme.palette.grayNormal};
+`
 
 const SquareContainer = styled.div<{xAmount: number}>`
   margin-top: 10px;
@@ -16,6 +23,8 @@ const SquareContainer = styled.div<{xAmount: number}>`
   font-size: 0;
   display: flex;
   flex-wrap: wrap;
+  box-sizing: content-box;
+  ${({theme}) => generateSquareBorderCSS('low', theme, 5)}
 `
 
 
@@ -50,7 +59,7 @@ const GameMinesweeper = (props: Props) => {
   const levelData = levelMapping[level];
 
 
-  const getInitialMap = (): MinesweeperMapData[] => {
+  const getInitialMap = useCallback((): MinesweeperMapData[] => {
     const [xAmount, yAmount] = levelData.map;
 
     const result = [];
@@ -59,7 +68,7 @@ const GameMinesweeper = (props: Props) => {
     }
 
     return result;
-  }
+  }, [levelData.map])
 
 
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
@@ -110,6 +119,25 @@ const GameMinesweeper = (props: Props) => {
     setMapData(mapDataStack);
   }
 
+  const showMine = useCallback(() => {
+    const cloneMapData = [...mapData];
+
+    minePosition
+      .forEach((position) => {
+        cloneMapData[position] = MapUnitType.Mine;
+      });
+
+    setMapData(cloneMapData);
+  }, [mapData, minePosition])
+
+  const endGame = useCallback((type: 'win' | 'lose') => {
+    if (type === 'lose') {
+      showMine();
+    }
+
+    setGameResult(type);
+  }, [showMine])
+
   useEffect(() => {
     if (gameResult) {
       return;
@@ -123,28 +151,7 @@ const GameMinesweeper = (props: Props) => {
     if (isSweepAllSquare) {
       endGame('win');
     }
-  }, [mapData])
-
-
-  const showMine = () => {
-    const cloneMapData = [...mapData];
-
-    minePosition
-      .forEach((position) => {
-        cloneMapData[position] = MapUnitType.Mine;
-      });
-
-    setMapData(cloneMapData);
-  }
-
-  const endGame = (type: 'win' | 'lose') => {
-    if (type === 'lose') {
-      showMine();
-    }
-    alert(type);
-
-    setGameResult(type);
-  }
+  }, [mapData, endGame, gameResult, minePosition.length])
 
 
   const flagAmount = levelData.mineAmount - mapData.filter((mapData) => mapData === MapUnitType.Flag).length;
@@ -187,7 +194,6 @@ const GameMinesweeper = (props: Props) => {
   }
 
   const getInitialMinePosition = (firstClickMapIndex: MapIndex): MapIndex[] => {
-    const [xAmount, yAmount] = levelData.map;
     const indexStack = [] as MapIndex[];
     for (let index = 0; index < mapData.length; index++) {
       if (index !== firstClickMapIndex) {
@@ -206,30 +212,29 @@ const GameMinesweeper = (props: Props) => {
   }
 
   const initialGame = () => {
-    setGameResult(null);
     setMinePosition([]);
   };
   useEffect(() => {
-    if (minePosition.length === 0) {
+    if (minePosition.length === 0 && mapData.some((type) => !isSquareCover(type))) {
+      setGameResult(null);
       setMapData(getInitialMap());
     }
-  }, [minePosition.length]);
+  }, [getInitialMap, mapData, minePosition.length]);
 
 
   return (
-    <div>
-      {/* TODO panel*/}
-      <div>
-        <span>Flag: {flagAmount}</span>
-
-        <Square onClick={initialGame}>R</Square>
-      </div>
+    <GameContainer>
+      <MinesweeperPanel
+        flagAmount={flagAmount}
+        gameResult={gameResult}
+        onMainActionClick={initialGame}
+      />
 
       <SquareContainer xAmount={levelData.map[0]}>
         {RenderMinesweeperSquare()}
       </SquareContainer>
 
-    </div>
+    </GameContainer>
   )
 }
 

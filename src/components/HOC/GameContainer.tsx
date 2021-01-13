@@ -10,6 +10,10 @@ const ButtonSquare = styled(Square)`
   display: inline-block;
 `
 
+const Title = styled.p`
+  text-align: center;
+`
+
 type Enum = {
   [key: string]: number | string;
 }
@@ -45,7 +49,7 @@ const withGameContainer: WithGameContainer = (Game, levelEnum) => {
         {
           level === null ? (
             <>
-              <p>Select Level To Play !</p>
+              <Title>Select Level To Play !</Title>
 
               {RenderLevelOption()}
             </>
