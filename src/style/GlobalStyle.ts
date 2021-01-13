@@ -9,6 +9,10 @@ const GlobalStyle = createGlobalStyle`
     height: 100vh;
   }
   
+  html {
+    font-family: "Microsoft JhengHei", Arial;
+  }
+  
   body {
     display: flex;
     justify-content: center;
