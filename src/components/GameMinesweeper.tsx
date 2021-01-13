@@ -83,47 +83,83 @@ const GameMinesweeper = (props: Props) => {
   //
   }
 
-  const clickSquareHandler = (position: MapIndex) => {
-    console.log('clickSquareHandler position', position)
+  const positionTool = Position.createTool(levelData.map);
+  const clickSquareHandler = (clickPosition: MapIndex) => {
+    console.log('clickSquareHandler position', clickPosition)
+
+    const _minePosition = minePosition.length > 0 ? minePosition : getInitialMinePosition(clickPosition);
+    setMinePosition((previousState) => previousState.length === 0 ? _minePosition : previousState);
+
+
+
+    console.log('地雷位置', _minePosition)
+    console.log('點後附近座標',
+      positionTool.getAdjacentPosition(clickPosition),
+      '附近地雷數',
+      positionTool.getMineAdjacentLevel(clickPosition, _minePosition)
+    )
+
+    const mapDataStack = [...mapData];
+    const mineAdjacentLevel = positionTool.getMineAdjacentLevel(clickPosition, _minePosition);
+    mapDataStack[clickPosition] = mineAdjacentLevel;
+
+    const sweepSquareSetMapDataRecursive = (
+      positionStack: MapIndex[],
+      checkedPositionStack: MapIndex[] = [clickPosition]
+    ) => {
+      console.log('遞迴中')
+
+      positionStack.map((position, index) => {
+        if (!checkedPositionStack.includes(position)) {
+          const mineAdjacentLevel = positionTool.getMineAdjacentLevel(position, _minePosition);
+
+          checkedPositionStack.push(position);
+          mapDataStack[position] = mineAdjacentLevel;
+
+          if (mineAdjacentLevel === MapUnitType.Clear) {
+            sweepSquareSetMapDataRecursive(positionTool.getAdjacentPosition(position), checkedPositionStack);
+          }
+        }
+      })
+    }
+
+    if (mineAdjacentLevel === MapUnitType.Clear) {
+      //TODO 由這邊展開
+      // const checkedPositionStack: MapIndex[] = [clickPosition];
+      // 要記錄什麼 position 改成什麼值的樣子 ！但如果直接在迴圈中改，應該就不需要
+
+      // 先確認 position 有沒有在 ｓｔａｃｋ 有就濾掉  ？這個好像不用
+      // 再來 確認該 position 的 鄰近地雷數量
+      // 有地雷資訊，就改 position 對應的地圖資訊後結束
+      // 沒有地雷數量，就繼續展開 -> 把 adjacent position 加進 positionStack 中（一樣要避免 merge 後重複，看能不能用 set解
+
+
+      sweepSquareSetMapDataRecursive(positionTool.getAdjacentPosition(clickPosition))
+    }
+
+
+
+    setMapData(mapDataStack);
+
     if (isGameInitial()) {
       //TODO initialMinePosition
-      const _minePosition = getInitialMinePosition(position);
-      console.log('地雷位置', _minePosition)
-      setMinePosition(_minePosition);
+      // const _minePosition = getInitialMinePosition(clickPosition);
+
+      // setMinePosition(_minePosition);
 
 
-      const positionTool = Position.createTool(levelData.map);
 
-      console.log('點後附近座標',
-        positionTool.getAdjacentPosition(position),
-        '附近地雷數',
-        positionTool.getMineAdjacentLevel(position, _minePosition)
-      )
-
-      // 由這邊展開
-      // const firstCheckPositionStack = [position, ...positionTool.getAdjacentPosition(position)];
-
-
-      //TODO 開地圖地迴 ！！！！！！ 但這邊還沒確認地雷
-      // firstCheckPositionStack.map((position, index, stack) => {
-      //   return positionTool.getAdjacentPosition(position)
-      //     .filter((position) => !stack.includes(position))
-      // })
 
     } else {
-
-      if (minePosition.includes(position)) {
-
-        // TODO: BOOOOOOOOM!!!
-      }
+        //TODO 這段邏輯已在 positionToll 實作
+      // if (minePosition.includes(position)) {
+      //
+      //   // TODO: BOOOOOOOOM!!!
+      // }
 
     }
 
   }
-
-  // useEffect(() => {
-  //
-  // }, [minePosition])
 
 
   const flagAmount = levelData.mineAmount - mapData.filter((mapData) => mapData === MapUnitType.Flag).length;
@@ -194,17 +230,22 @@ const GameMinesweeper = (props: Props) => {
   }
 
   const initialGame = () => {
-
-  }
-
-
-
+    setMinePosition([]);
+  };
   useEffect(() => {
-    console.log('初始化地圖')
-    getInitialMap();
+    if (minePosition.length === 0) {
+      setMapData(getInitialMap());
+    }
+  }, [minePosition.length]);
 
-    console.log('mapData', mapData)
-  }, [])
+
+
+  // useEffect(() => {
+  //   console.log('初始化地圖')
+  //   getInitialMap();
+  //
+  //   console.log('mapData', mapData)
+  // }, [])
 
   return (
     <div>

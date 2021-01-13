@@ -1,5 +1,5 @@
 import {MapIndex, MovedIndex} from '@/consts/types';
-import {MineNearLevel} from '@/consts/enum';
+import {MapUnitType} from '@/consts/enum';
 
 const filterValidPosition = (positionList: MovedIndex[]): MapIndex[] => {
   return positionList.filter((position) => position !== null) as MapIndex[];
@@ -56,9 +56,9 @@ export class Position {
           Math.floor(position / xAmount)
         ] as [number, number];
       },
-      getMineAdjacentLevel(position: MapIndex, minePosition: MapIndex[]): MineNearLevel {
+      getMineAdjacentLevel(position: MapIndex, minePosition: MapIndex[]): MapUnitType {
         if (minePosition.includes(position)) {
-          return MineNearLevel.Mine;
+          return MapUnitType.Mine;
         } else {
           const adjacentPosition: MapIndex[] = this.getAdjacentPosition(position);
 
@@ -68,8 +68,8 @@ export class Position {
           const adjacentMineAmount = mergedPosition.length - removeDuplicatedValueLength;
 
           return adjacentMineAmount === 0
-            ? MineNearLevel.Clear
-            : MineNearLevel[ `NearLevel${ adjacentMineAmount }` as keyof typeof MineNearLevel ];
+            ? MapUnitType.Clear
+            : MapUnitType[ `NearLevel${ adjacentMineAmount }` as keyof typeof MapUnitType ];
         }
       },
       getAdjacentPosition(position: MapIndex): MapIndex[] {
