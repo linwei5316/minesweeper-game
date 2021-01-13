@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import GameMinesweeper from "@/components/GameMinesweeper";
 import { ThemeProvider } from "styled-components";
 import theme from "@/style/theme";
