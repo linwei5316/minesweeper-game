@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {SyntheticEvent} from 'react';
 import styled, {DefaultTheme} from "styled-components";
 import {MapUnitType} from '@/consts/enum';
 import Square from '@/components/Square';
@@ -36,7 +36,7 @@ const MinesweeperSquare = (props: Props) => {
     }
   }
 
-  const clickContextMenuHandler = (event: any) => {
+  const clickContextMenuHandler = (event: SyntheticEvent) => {
     if (event.type === 'contextmenu') {
       event.preventDefault();
 
