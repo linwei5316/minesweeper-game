@@ -13,7 +13,14 @@ const StyledSquare = styled(Square)<{ type: MinesweeperMapData }>`
       ?  ''
       : `border: 1px solid ${theme.palette.grayLight};`;
   }}
-  ${({type}) => type === MapUnitType.Flag ? 'cursor: default;' : ''}
+  ${({type}) => {
+    const cursorDefaultCSS = 'cursor: default;';
+    if (isSquareCover(type)) {
+      return type === MapUnitType.Flag ? cursorDefaultCSS : '';
+    } else {
+      return cursorDefaultCSS;
+    }
+  }}
 `
 
 const Text = styled.span<{colorKey: keyof DefaultTheme['palette']}>`

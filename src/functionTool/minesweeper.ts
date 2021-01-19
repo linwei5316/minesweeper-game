@@ -3,9 +3,12 @@ import {MapUnitType} from '@/consts/enum';
 
 
 export const isSquareCover = (typeValue: MinesweeperMapData) => {
-  const condition = [MapUnitType.Flag, null];
+  const condition = new Map([
+    [MapUnitType.Flag, null],
+    [null, null]
+  ]);
 
-  return condition.includes(typeValue);
+  return condition.has(typeValue);
 }
 
 const filterValidPosition = (positionList: MovedIndex[]): MapIndex[] => {

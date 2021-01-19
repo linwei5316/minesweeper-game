@@ -96,17 +96,17 @@ const GameMinesweeper = (props: Props) => {
 
     const sweepSquareSetMapDataRecursive = (
       positionStack: MapIndex[],
-      checkedPositionStack: MapIndex[] = [clickPosition]
+      checkedPositionMap: Map<MapIndex, null> = new Map([[clickPosition, null]])
     ) => {
       positionStack.forEach((position) => {
-        if (!checkedPositionStack.includes(position)) {
+        if (!checkedPositionMap.has(position)) {
           const mineAdjacentLevel = positionTool.getMineAdjacentLevel(position, _minePosition);
 
-          checkedPositionStack.push(position);
+          checkedPositionMap.set(position, null);
           mapDataStack[position] = mineAdjacentLevel;
 
           if (mineAdjacentLevel === MapUnitType.Clear) {
-            sweepSquareSetMapDataRecursive(positionTool.getAdjacentPosition(position), checkedPositionStack);
+            sweepSquareSetMapDataRecursive(positionTool.getAdjacentPosition(position), checkedPositionMap);
           }
         }
       })
